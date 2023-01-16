@@ -17,8 +17,6 @@ const createARequest = async (req, res, next) => {
 }
 
 const seeAllRequests = async (req, res, next) => {
-    // const statusFilter = req.query.status
-    // const typeFiler = req.query.type
     let allRequests
     try{
         allRequests = await Request.find(req.query).sort({dateAndTime: 1}).limit(5)
@@ -28,7 +26,7 @@ const seeAllRequests = async (req, res, next) => {
     const result = []
     const currentTime = new Date()
     for (const key in allRequests) {
-        request = allRequests[key]
+        let request = allRequests[key]
         if(request.dateAndTime > currentTime)
         request.status = "Expired"
         result.push(request)
@@ -37,7 +35,7 @@ const seeAllRequests = async (req, res, next) => {
     return res.status(200).json(result)
 }
 
-const matchedRequests = async (req) => {
+async function matchedRequests(req){
     let riderInfo
     let allRequests
     try{
@@ -60,8 +58,8 @@ const matchedRequests = async (req) => {
 }
 
 const getMatchedRequests = async (req, res) => {
-    const matchedRequests = await matchedRequests(req)
-    return res.status(200).json(matchedRequests)
+    const result = await matchedRequests(req)
+    return res.status(200).json(result)
 }
 
 const applyARequest = async (req, res) => {
@@ -73,12 +71,12 @@ const applyARequest = async (req, res) => {
         return res.status(500).json(err)
     }
     if(request.applied == true) return res.status(400).json({message: "Request already applied"})
-    const matchedRequests = await matchedRequests(req)
-    if(matchedRequests.includes(request.id))
+    const result = await matchedRequests(req)
+    if(result.includes(request.id))
     request.applied = true
     else
     return res.status(400).json({message: "Request is not matched yet..."})
     return res.status(200).json({message: "Request applied"})
 }
 
-module.exports = {createARequest, seeAllRequests, getMatchedRequests, applyARequest}
+module.exports = {createARequest, seeAllRequests, getMatchedRequests, applyARequest, matchedRequests}
